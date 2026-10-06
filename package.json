@@ -16,7 +16,8 @@
     "README.md",
     "PROVENANCE.md",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "scripts"
   ],
   "engines": {
     "node": ">=20"
