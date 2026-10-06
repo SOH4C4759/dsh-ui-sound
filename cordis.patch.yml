@@ -1,0 +1,9 @@
+# dsh-ui-sound bundle patch.
+#
+# One Host row named after the package. The Host half owns the durable
+# preference file and the loopback-only `/ui-sound/api/settings` route; the
+# browser half is declared by `dsh.client` in package.json and registers the
+# sound engine, the interaction/task watchers, and the settings page.
+- insert:
+    - id: ui-sound
+      name: 'dsh-ui-sound'

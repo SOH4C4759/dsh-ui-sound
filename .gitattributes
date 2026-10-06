@@ -1,0 +1,5 @@
+# Keep the published tree byte-stable across platforms: the shipped lib/ and
+# vendor/ files are build outputs, and a CRLF conversion would change every
+# byte of the inlined uisfx engine without any semantic reason.
+* text=auto eol=lf
+*.png binary

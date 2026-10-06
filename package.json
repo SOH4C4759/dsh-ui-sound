@@ -1,0 +1,52 @@
+{
+  "name": "dsh-ui-sound",
+  "version": "0.1.0",
+  "description": "DSH Web UI sound effects (community port of dsh-plugin-uisfx for DeepSeek Harness 0.2.0): semantic cues for interface interaction and task-status changes, with a per-scenario settings page and durable preferences.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "vendor",
+    "cordis.patch.yml",
+    "README.md",
+    "PROVENANCE.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "sound-effects",
+    "ui-sfx",
+    "web-audio"
+  ],
+  "license": "MIT",
+  "author": "林冠宇 (SOH4C4759)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SOH4C4759/dsh-ui-sound.git"
+  },
+  "homepage": "https://github.com/SOH4C4759/dsh-ui-sound#readme",
+  "bugs": {
+    "url": "https://github.com/SOH4C4759/dsh-ui-sound/issues"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": []
+    }
+  }
+}
