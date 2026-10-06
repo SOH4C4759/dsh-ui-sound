@@ -141,22 +141,22 @@ ctx.uiSound.getPrefs()             // 当前偏好
 ## 校验（改代码前后都该跑）
 
 仓库里的 `lib/` 是提交进版本库的产物，所以 CI 不构建，只守**会被手改悄悄破坏的不变量**。
-两条命令本地与 CI 完全一致，不需要 `pnpm install`（不依赖任何 npm 包）：
+三条命令本地与 CI 完全一致，不需要 `pnpm install`（不依赖任何 npm 包）：
 
 ```powershell
-node scripts/verify-package.mjs          # 包形态、ModuleLoader 入口、宿主半离线求值、文档里的条数
+node scripts/verify-bundle.mjs           # 发布形态契约：manifest、exports/files 目标、入口语法
+node scripts/verify-package.mjs          # 发布元数据、浏览器半契约、宿主半离线求值、文档里的条数
 node scripts/verify-publish-guards.mjs   # 本机绝对路径 / 账号名 / 凭据 / 内网地址
 ```
 
-`verify-package.mjs` 会真的 `import` `lib/index.js`（宿主半只依赖 `node:` 内置模块），
-读回 `SCENARIO_IDS` / `PACK_IDS` / `CUE_IDS` 与 `DEFAULT_PREFS`，核对 README 里写的
-**11 情景 / 12 音色包 / 78 cue** 是否就是代码里的真实值，并验一遍 `normalizePrefs` 的裁剪行为。
-换句话说：**文档漂移会让 CI 红**，不会等到读者踩坑才发现。
+三者分工不重叠：
 
-`verify-publish-guards.mjs` 会扫全树的文本文件，命中作者本机路径、账号名、token 字面量或内网网段即失败。
+- **`verify-bundle.mjs`** 管「包装出来能不能被加载」——`dsh.bundle.patch`、每个 `exports`/`files` 目标是否真实存在、入口文件能否解析。它接受一个可选 root，所以既能查检出，也能查**解包后的发布压缩包**（`release.yml` 就是这么复核产物的）。
+- **`verify-package.mjs`** 管「发布出去是否安全、是否还在用当前 dsh 的 API」——真实 LICENSE 文件、非 `private`、repository/author/meta；浏览器半只有一个 ModuleLoader 工厂、只 `require("react")`、不再读 0.2.0 已移除的 `list.current` 与 `snapshot.pending`。它会真的 `import` `lib/index.js`（宿主半只依赖 `node:` 内置模块），读回 `SCENARIO_IDS` / `PACK_IDS` / `CUE_IDS` / `DEFAULT_PREFS`，核对 README 写的 **11 情景 / 12 音色包 / 78 cue** 是否就是代码真实值，并验一遍 `normalizePrefs` 的裁剪行为。**文档漂移会让 CI 红**，不会等读者踩坑才发现。
+- **`verify-publish-guards.mjs`** 扫全树文本文件，命中作者本机路径、账号名、token 字面量或内网网段即失败。
 
-`.github/workflows/integrity.yml` 在 push / PR 上跑这两条，外加 `node --check` 两个插件半，
-以及一次 `npm pack` 后核对压缩包里是否含全部运行期文件。
+`.github/workflows/ci.yml` 在 push / PR 上跑全部三条，另加一次 `npm pack` 并核对压缩包里含全部运行期文件；
+`release.yml` 在 `v*` tag 上出发布包。发布流程见 [RELEASING.md](RELEASING.md)。
 
 ## 已知边界（未做）
 

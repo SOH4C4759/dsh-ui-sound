@@ -35,6 +35,38 @@ jobs:
       - name: bundle contract
         run: node scripts/verify-bundle.mjs
 
+  # Release-contract half of CI: the things a shape check cannot see. The bundle
+  # contract above proves the package *loads*; this proves it is safe to publish
+  # (metadata a public release needs, no author paths or credentials in the tree),
+  # that the browser half still respects the current dsh API surface, and that the
+  # counts quoted in README.md are the ones the Host half actually exports — so
+  # document drift is a red build rather than a reader's first dead end.
+  contract:
+    name: Release contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: runtime contract and documented counts
+        run: node scripts/verify-package.mjs
+      - name: publish guards
+        run: node scripts/verify-publish-guards.mjs
+      - name: packed tarball carries every runtime file
+        run: |
+          set -euo pipefail
+          npm pack --silent >/dev/null
+          TGZ="$(ls -1 *.tgz | head -n1)"
+          test -n "$TGZ"
+          tar -xzf "$TGZ" -C .
+          NAME="$(node -p 'require("./package.json").name')"
+          for f in lib/index.js lib/client.js cordis.patch.yml package.json LICENSE NOTICE PROVENANCE.md vendor/uisfx-0.4.0.js; do
+            test -f "package/$f" || { echo "missing from the packed tarball: $f"; exit 1; }
+          done
+          echo "packed tarball ($TGZ) contains every runtime file"
+
   package:
     name: Build the release package
     runs-on: ubuntu-24.04
