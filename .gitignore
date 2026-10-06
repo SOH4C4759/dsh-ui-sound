@@ -1,3 +1,7 @@
 node_modules/
 *.log
 *.tmp
+
+# Release staging directory: `git archive` drops the published zip here, both in
+# CI and when the same steps are rehearsed locally.
+dist/

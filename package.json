@@ -39,6 +39,10 @@
   "bugs": {
     "url": "https://github.com/SOH4C4759/dsh-ui-sound/issues"
   },
+  "meta": {
+    "title": "界面音效",
+    "description": "把界面交互与任务状态更新变成可听见的语义反馈：每类反馈都能在设置页单独挑音效、单独开关，偏好持久化。"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
