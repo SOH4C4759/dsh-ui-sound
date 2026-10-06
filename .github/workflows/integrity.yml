@@ -1,0 +1,49 @@
+name: integrity
+
+# The plugin ships prebuilt `lib/` artifacts, so the useful CI is not a build —
+# it is the set of invariants that a hand edit could quietly break: the bundle
+# manifest, the ModuleLoader entry shape, the Host half's offline evaluation,
+# the documented counts, and the publish guards (no local paths, no credentials).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Syntax check both plugin halves
+        run: |
+          node --check lib/index.js
+          node --check lib/client.js
+
+      - name: Verify the package shape and documented counts
+        run: node scripts/verify-package.mjs
+
+      - name: Verify publish guards
+        run: node scripts/verify-publish-guards.mjs
+
+      - name: The bundle must install and expose its client export
+        shell: pwsh
+        run: |
+          npm pack --silent | Out-Null
+          $tgz = Get-ChildItem -Filter '*.tgz' | Select-Object -First 1
+          if ($null -eq $tgz) { throw 'npm pack produced no tarball' }
+          New-Item -ItemType Directory -Force -Path probe | Out-Null
+          tar -xzf $tgz.FullName -C probe
+          $pkg = 'probe/package'
+          foreach ($f in 'lib/index.js', 'lib/client.js', 'cordis.patch.yml', 'package.json', 'LICENSE', 'NOTICE', 'PROVENANCE.md', 'vendor/uisfx-0.4.0.js') {
+            if (-not (Test-Path (Join-Path $pkg $f))) { throw "missing from the packed tarball: $f" }
+          }
+          "packed tarball contains every runtime file"

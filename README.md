@@ -138,6 +138,26 @@ ctx.uiSound.getPrefs()             // 当前偏好
 
 逐文件的来源、改动幅度与许可归属见 [PROVENANCE.md](PROVENANCE.md)。
 
+## 校验（改代码前后都该跑）
+
+仓库里的 `lib/` 是提交进版本库的产物，所以 CI 不构建，只守**会被手改悄悄破坏的不变量**。
+两条命令本地与 CI 完全一致，不需要 `pnpm install`（不依赖任何 npm 包）：
+
+```powershell
+node scripts/verify-package.mjs          # 包形态、ModuleLoader 入口、宿主半离线求值、文档里的条数
+node scripts/verify-publish-guards.mjs   # 本机绝对路径 / 账号名 / 凭据 / 内网地址
+```
+
+`verify-package.mjs` 会真的 `import` `lib/index.js`（宿主半只依赖 `node:` 内置模块），
+读回 `SCENARIO_IDS` / `PACK_IDS` / `CUE_IDS` 与 `DEFAULT_PREFS`，核对 README 里写的
+**11 情景 / 12 音色包 / 78 cue** 是否就是代码里的真实值，并验一遍 `normalizePrefs` 的裁剪行为。
+换句话说：**文档漂移会让 CI 红**，不会等到读者踩坑才发现。
+
+`verify-publish-guards.mjs` 会扫全树的文本文件，命中作者本机路径、账号名、token 字面量或内网网段即失败。
+
+`.github/workflows/integrity.yml` 在 push / PR 上跑这两条，外加 `node --check` 两个插件半，
+以及一次 `npm pack` 后核对压缩包里是否含全部运行期文件。
+
 ## 已知边界（未做）
 
 - 只做**合成音效**，不支持导入自定义音频文件（uisfx 引擎本身是参数化合成，没有采样播放通道）。
