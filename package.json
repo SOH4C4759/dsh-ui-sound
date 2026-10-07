@@ -1,6 +1,6 @@
 {
   "name": "dsh-ui-sound",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DSH Web UI sound effects (community port of dsh-plugin-uisfx for DeepSeek Harness 0.2.0): semantic cues for interface interaction and task-status changes, with a per-scenario settings page and durable preferences.",
   "type": "module",
   "main": "lib/index.js",
